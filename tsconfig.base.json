@@ -16,6 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@a1c/data": ["libs/data-access/src/index.ts"],
+      "@a1c/services": ["libs/services/src/index.ts"],
+      "@a1c/types": ["libs/types/src/index.ts"],
       "@a1c/ui": ["libs/ui/src/index.ts"],
       "@a1c/utils": ["libs/utils/src/index.ts"]
     }
