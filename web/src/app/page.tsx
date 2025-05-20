@@ -1,3 +1,5 @@
+import { utils } from "@a1c/utils";
+
 export default function Index() {
   /*
    * Replace the elements below with your own.
@@ -12,6 +14,7 @@ export default function Index() {
             <h1>
               <span> Hello there, </span>
               Welcome web 👋
+              Here we can use {utils.toString()}
             </h1>
           </div>
 
