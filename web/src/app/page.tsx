@@ -1,4 +1,4 @@
-import { utils } from "@a1c/utils";
+import { Welcome } from "@a1c/ui";
 
 export default function Index() {
   /*
@@ -13,8 +13,7 @@ export default function Index() {
           <div id="welcome">
             <h1>
               <span> Hello there, </span>
-              Welcome web 👋
-              Here we can use {utils.toString()}
+              Here we can use <Welcome />
             </h1>
           </div>
 

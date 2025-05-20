@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@a1c/data": ["libs/data-access/src/index.ts"],
       "@a1c/ui": ["libs/ui/src/index.ts"],
       "@a1c/utils": ["libs/utils/src/index.ts"]
     }

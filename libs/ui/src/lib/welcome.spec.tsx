@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import Welcome from './welcome';
+import {Welcome} from './welcome';
 
 describe('welcome', () => {
   it('should render successfully', () => {

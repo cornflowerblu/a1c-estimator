@@ -1,11 +1,11 @@
 import { utils } from '@a1c/utils';
 
-export default function Welcome() {
-  const message = utils.toString()
+export function Welcome() {
+
   return (
     <div>
-      <h1>Welcome to Ui!</h1>
-      <h2>We are using {message}</h2>
+      <p>a package imported from UI!</p>
+      <p>We are using {utils()}</p>
     </div>
   );
 }
