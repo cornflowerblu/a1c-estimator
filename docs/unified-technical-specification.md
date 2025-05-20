@@ -1,10 +1,10 @@
-# A1C Estimator Technical Architecture
+# A1C Estimator - Technical Specification
 
-## Overview
+## System Overview
 
-The A1C Estimator will be built as a modern web application with potential for mobile expansion, using the Nx workspace for modular development. This document outlines the technical architecture, including component structure, data flow, and technology choices.
+The A1C Estimator is a modern web application built with Next.js and Nx workspace that helps users track blood glucose readings and estimate A1C levels. This document outlines the technical architecture, data models, and implementation details for the application.
 
-## System Architecture
+## Architecture
 
 ### High-Level Architecture
 
@@ -79,34 +79,32 @@ The A1C Estimator will be built as a modern web application with potential for m
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Technology Stack
+### Technology Stack
 
-### Frontend
-
+#### Frontend
 - **Framework**: Next.js (via Nx)
 - **Component Library**: React with TypeScript
 - **Styling**: TailwindCSS with custom theme
 - **State Management**: React Context API + React Query
 - **Form Handling**: React Hook Form with Zod validation
-- **Data Visualization**: Chart.js or D3.js
+- **Data Visualization**: Recharts or D3.js
 - **Testing**: Jest, React Testing Library, Cypress
 
-### Backend
-
+#### Backend
 - **API Framework**: Next.js API routes
 - **Authentication**: AWS Cognito
 - **Database**: PostgreSQL with Prisma ORM
 - **File Storage**: AWS S3 or similar cloud storage
 - **Caching**: Redis (for performance optimization)
 
-### DevOps
-
+#### DevOps
+- **Infrastructure as Code**: AWS CDK
 - **CI/CD**: GitHub Actions
 - **Containerization**: Docker
-- **Hosting**: Vercel (frontend), AWS or similar (backend)
+- **Hosting**: AWS App Runner with Aurora Serverless
 - **Monitoring**: Sentry for error tracking
 
-## Data Model
+## Data Models
 
 ### Core Entities
 
@@ -187,6 +185,94 @@ interface Month {
 }
 ```
 
+## Database Schema
+
+### Entities
+
+#### User Table
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| email | String | User's email address (unique) |
+| name | String | User's full name (optional) |
+| externalId | String | ID from authentication provider (Cognito) |
+| createdAt | DateTime | When the user was created |
+| updatedAt | DateTime | When the user was last updated |
+
+#### GlucoseReading Table
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| userId | UUID | Foreign key to User |
+| value | Float | Glucose reading value in mg/dL |
+| timestamp | DateTime | When the reading was taken |
+| mealContext | Enum | Context of the reading |
+| notes | String | Optional notes about the reading |
+| runId | UUID | Foreign key to Run (optional) |
+| createdAt | DateTime | When the record was created |
+| updatedAt | DateTime | When the record was last updated |
+
+#### Run Table
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| userId | UUID | Foreign key to User |
+| name | String | Name of the run |
+| startDate | DateTime | Start date of the run |
+| endDate | DateTime | End date of the run |
+| calculatedA1C | Float | Calculated A1C value for this run |
+| averageGlucose | Float | Average glucose value for this run |
+| monthId | UUID | Foreign key to Month (optional) |
+| createdAt | DateTime | When the record was created |
+| updatedAt | DateTime | When the record was last updated |
+
+#### Month Table
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| userId | UUID | Foreign key to User |
+| name | String | Name of the month |
+| startDate | DateTime | Start date of the month |
+| endDate | DateTime | End date of the month |
+| calculatedA1C | Float | Calculated A1C value for this month |
+| averageGlucose | Float | Average glucose value for this month |
+| createdAt | DateTime | When the record was created |
+| updatedAt | DateTime | When the record was last updated |
+
+#### UserPreferences Table
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| userId | UUID | Foreign key to User (unique) |
+| displayUnit | Enum | Preferred display unit (A1C or AG) |
+| targetA1C | Float | User's target A1C value (optional) |
+| reminderEnabled | Boolean | Whether reminders are enabled |
+| reminderFrequency | Enum | Frequency of reminders |
+| theme | Enum | UI theme preference |
+| createdAt | DateTime | When the record was created |
+| updatedAt | DateTime | When the record was last updated |
+
+#### UserMedicalProfile Table
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| userId | UUID | Foreign key to User (unique) |
+| diabetesType | Enum | Type of diabetes |
+| birthYear | Integer | User's birth year (optional) |
+| targetA1C | Float | User's target A1C value (optional) |
+| preferredUnit | Enum | Preferred glucose unit |
+| createdAt | DateTime | When the record was created |
+| updatedAt | DateTime | When the record was last updated |
+
+### Relationships
+- **User** 1:N **GlucoseReading** - A user can have many glucose readings
+- **User** 1:N **Run** - A user can have many runs
+- **User** 1:N **Month** - A user can have many months
+- **User** 1:1 **UserPreferences** - A user has one set of preferences
+- **User** 1:1 **UserMedicalProfile** - A user has one medical profile
+- **Run** 1:N **GlucoseReading** - A run can contain many glucose readings
+- **Month** 1:N **Run** - A month can contain many runs
+
 ## Component Structure
 
 ### Core Components
@@ -253,6 +339,70 @@ interface Month {
 - `DELETE /months/:id` - Delete month
 - `POST /months/:id/calculate` - Calculate A1C for month
 
+## Authentication Implementation
+
+### AWS Cognito Setup
+- Single User Pool with email as primary identifier
+- Standard password policies with email verification
+- JWT tokens for authentication
+
+### Authentication Flow
+1. **User Registration**:
+   - User enters email and password
+   - AWS Cognito creates a new user
+   - Verification email is sent to the user
+   - User verifies email by clicking on the link
+
+2. **User Login**:
+   - User enters email and password
+   - AWS Cognito validates credentials
+   - Upon successful validation, JWT tokens are issued
+   - Tokens are stored in secure HTTP-only cookies
+
+3. **Token Management**:
+   - Access token for API authorization
+   - Refresh token for obtaining new access tokens
+   - ID token for user information
+
+4. **User Session**:
+   - Session maintained via tokens
+   - Automatic refresh of tokens when expired
+   - Secure logout process that invalidates tokens
+
+## A1C Calculation Algorithm
+
+The application uses a formula based on scientific research to convert average glucose readings to an estimated A1C percentage:
+
+```
+A1C = (Average Glucose + 46.7) / 28.7
+```
+
+The calculation process involves:
+1. Validating input data (time order, value ranges)
+2. Sorting and organizing readings
+3. Interpolating between readings using random variations
+4. Calculating weighted averages
+5. Converting to A1C using the formula
+6. Formatting and displaying results
+
+## Infrastructure Deployment
+
+### AWS CDK Stack
+
+The application will be deployed using AWS CDK with the following resources:
+- Aurora Serverless v2 PostgreSQL database
+- App Runner service for the Next.js application
+- VPC with proper networking configuration
+- Security groups and IAM roles
+- Secrets Manager for database credentials
+
+### Deployment Process
+1. Set up AWS CDK project
+2. Configure infrastructure as code
+3. Deploy database and networking components
+4. Deploy application to App Runner
+5. Configure CI/CD pipeline for automated deployments
+
 ## Security Considerations
 
 1. **Authentication**: Implement secure authentication with JWT tokens
@@ -283,6 +433,28 @@ interface Month {
 6. **Responsive Design**: Ensure accessibility across all device sizes
 7. **Alternative Text**: Provide alt text for all images
 
+## Testing Strategy
+
+### Unit Testing
+- Test individual components and functions
+- Validate calculation algorithms
+- Verify form validation
+
+### Integration Testing
+- Test API endpoints
+- Verify data flow between components
+- Test database operations
+
+### End-to-End Testing
+- Test complete user flows
+- Verify authentication and authorization
+- Test across different devices and browsers
+
+### Performance Testing
+- Optimize component rendering
+- Test with large datasets
+- Verify responsiveness on mobile devices
+
 ## Implementation Approach
 
 1. **Modular Development**: Use Nx workspace to create modular libraries
@@ -292,5 +464,3 @@ interface Month {
 5. **Documentation**: Document code, APIs, and architecture
 6. **Code Reviews**: Implement peer code reviews for all changes
 7. **Iterative Development**: Build incrementally with regular feedback cycles
-
-This architecture provides a solid foundation for building a modern, scalable, and maintainable A1C Estimator application that can grow with user needs and technological advancements.
