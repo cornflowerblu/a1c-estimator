@@ -1,77 +1,130 @@
-# A1cEstimator
+# Modern Web Application Development Framework with Nx
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A comprehensive monorepo setup using Nx for building scalable web applications with React, Next.js, and TypeScript. This framework provides a modular architecture with shared libraries for UI components, services, data access, and utilities.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+The project implements a modern development environment with full testing support through Jest and Cypress, build optimization via Vite, and continuous integration using GitHub Actions. It features a modular architecture that separates concerns into distinct libraries, making it ideal for large-scale applications that require maintainable and reusable code.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-
-## Finish your CI setup
-
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/3yPt5JKCpC)
-
-
-## Run tasks
-
-To run tasks with Nx use:
-
-```sh
-npx nx <target> <project-name>
+## Repository Structure
+```
+.
+├── libs/                      # Shared libraries
+│   ├── data-access/          # Data access layer for API interactions
+│   ├── services/             # Business logic and service layer
+│   ├── types/                # Shared TypeScript type definitions
+│   ├── ui/                   # Reusable React UI components
+│   └── utils/                # Common utility functions
+├── web/                      # Main Next.js web application
+│   ├── src/
+│   │   └── app/             # Next.js app directory with API routes
+│   └── specs/               # Web application tests
+├── web-e2e/                 # End-to-end tests using Cypress
+├── nx.json                  # Nx workspace configuration
+└── package.json             # Project dependencies and scripts
 ```
 
-For example:
+## Usage Instructions
+### Prerequisites
+- Node.js 20.x or later
+- npm 8.x or later
+- Git
 
-```sh
-npx nx build myproject
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd <repository-name>
+
+# Install dependencies
+npm ci --legacy-peer-deps
+
+# Build all libraries
+npx nx run-many --target=build --all
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
+### Quick Start
+1. Start the development server:
+```bash
+npx nx serve web
 ```
 
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
+2. Run tests:
+```bash
+# Unit tests
+npx nx test
 
-```sh
-# Generate an app
-npx nx g @nx/react:app demo
-
-# Generate a library
-npx nx g @nx/react:lib some-lib
+# E2E tests
+npx nx e2e web-e2e
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+### More Detailed Examples
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+1. Creating a new library:
+```bash
+npx nx g @nx/react:library my-library
+```
 
+2. Running affected tests:
+```bash
+npx nx affected:test
+```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+3. Building specific projects:
+```bash
+npx nx build web
+```
 
-## Install Nx Console
+### Troubleshooting
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+1. Common Build Issues
+- Issue: Module not found errors
+  ```bash
+  # Clear Nx cache
+  npx nx reset
+  # Rebuild all projects
+  npx nx run-many --target=build --all
+  ```
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+2. Development Server Issues
+- Issue: Hot reload not working
+  ```bash
+  # Clear Next.js cache
+  rm -rf web/.next
+  # Restart development server
+  npx nx serve web
+  ```
 
-## Useful links
+## Data Flow
+The application follows a layered architecture pattern with clear separation of concerns.
 
-Learn more:
+```ascii
+[Client] -> [Next.js Routes] -> [Services Layer] -> [Data Access Layer] -> [External APIs]
+     ^            |                    |                     |
+     |            v                    v                     v
+     +--------- [UI Components] <- [Business Logic] <- [Data Models]
+```
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Component interactions:
+1. UI components consume services for business logic
+2. Services use data-access layer for API interactions
+3. Types library provides shared interfaces across layers
+4. Utils library provides common functionality
+5. Next.js API routes handle external requests
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Infrastructure
+
+### Build System
+- Nx workspace configuration manages project dependencies and build pipeline
+- Vite handles UI library bundling and optimization
+- Jest and Cypress handle testing infrastructure
+
+### CI/CD
+- GitHub Actions workflow for continuous integration
+- Automated testing and building of affected projects
+- Nx Cloud integration for distributed task execution
+
+### Development Tools
+- ESLint for code quality
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Next.js for server-side rendering and API routes
