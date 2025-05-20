@@ -1,6 +1,6 @@
 import { RandomData } from "@a1c/types";
 
-export async function randomData(): Promise<RandomData> {
+export async function randomData(): Promise<{ data: RandomData; statusCode: number }> {
   // Implement the actual data fetching logic here
   const data: RandomData = {
     id: Math.floor(Math.random() * 1000),
@@ -10,5 +10,8 @@ export async function randomData(): Promise<RandomData> {
     tags: ["random", "data"]
   };
   
-  return data;
+  return {
+    data,
+    statusCode: 200
+  };
 }
