@@ -1,22 +1,32 @@
 import { DefaultSession } from "next-auth";
-import { JWT as NextAuthJWT } from "next-auth/jwt";
 
+// Extend the built-in session types
 declare module "next-auth" {
-  /**
-   * Extends the built-in session types
-   */
   interface Session {
     user: {
       id: string;
-    } & DefaultSession["user"]
+    } & DefaultSession["user"];
   }
 }
 
+// Extend the built-in JWT types
 declare module "next-auth/jwt" {
-  /**
-   * Extends the built-in JWT types
-   */
-  interface JWT extends NextAuthJWT {
-    sub?: string;
+  interface JWT {
+    id?: string;
+    // Add any other properties you need
   }
+}
+
+// Define user role types
+export enum UserRole {
+  USER = "USER",
+  ADMIN = "ADMIN",
+}
+
+export interface AuthUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: UserRole;
 }

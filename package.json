@@ -1,14 +1,19 @@
 {
-  "name": "@a1c-estimator/source",
+  "name": "@a1c/auth/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+  "postinstall": "prisma generate --schema=./libs/db/schema/prisma/schema.prisma"
+},
   "private": true,
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",
+    "@headlessui/react": "^2.2.4",
     "@nx/node": "^21.1.0",
+    "@prisma/client": "^6.8.2",
     "next": "~15.2.4",
     "next-auth": "^4.24.11",
+    "nodemailer": "^6.10.1",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
@@ -34,6 +39,7 @@
     "@testing-library/react": "16.1.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.0.0",
+    "@types/nodemailer": "^6.4.17",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
     "@vitejs/plugin-react": "^4.2.0",
@@ -52,6 +58,7 @@
     "nx": "21.1.0",
     "postcss": "8.4.38",
     "prettier": "^2.6.2",
+    "prisma": "^6.8.2",
     "tailwindcss": "3.4.3",
     "ts-jest": "^29.1.0",
     "ts-node": "10.9.1",
