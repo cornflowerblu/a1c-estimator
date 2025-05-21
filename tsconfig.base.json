@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@a1c/auth": ["libs/auth/src/index.ts"],
       "@a1c/data": ["libs/data-access/src/index.ts"],
       "@a1c/services": ["libs/services/src/index.ts"],
       "@a1c/types": ["libs/types/src/index.ts"],
