@@ -24,5 +24,5 @@
       "@a1c/utils": ["libs/utils/src/index.ts"]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": ["node_modules", "tmp", "seed*.ts"]
 }
