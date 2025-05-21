@@ -1,5 +1,6 @@
 import { utils } from '@a1c/utils';
 import { dataAccess } from '@a1c/data';
+import { RandomData } from '@a1c/types'
 
 export async function Welcome() {
   // Server-side data fetching
@@ -9,7 +10,10 @@ export async function Welcome() {
   try {
     // In a real app, you might want to use a more robust way to fetch data
     // This is a simple example that directly uses the same function as the API
-    apiMessage = `Hello, from ${dataAccess()}!`;
+    const res: RandomData = await dataAccess();
+    const message = res.data;
+    
+    apiMessage = `Hello, from ${message}!`;
   } catch (err) {
     error = 'Failed to fetch data';
     console.error('Error getting data:', err);
