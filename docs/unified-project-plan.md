@@ -39,10 +39,19 @@ While functional, the original application had limitations including:
 - [x] Design database schema
 
 #### Authentication System
-- [ ] Set up AWS Cognito user pool
-- [ ] Implement authentication API endpoints
+- [ ] Set up AWS Cognito user pool with passwordless options
+- [ ] Implement magic link email authentication
+- [ ] Configure social login providers (Google, Apple, Facebook)
+- [ ] Add passkey (WebAuthn) support
 - [ ] Create login/registration UI components
 - [ ] Set up protected routes and middleware
+
+#### Frontend Core Development
+- [ ] Design and implement application layout and navigation
+- [ ] Create dashboard and main user interface
+- [ ] Build glucose reading input forms (simple and detailed)
+- [ ] Implement run and month management interfaces
+- [ ] Develop initial data visualization components
 
 #### Core Data Management
 - [ ] Implement glucose reading input forms

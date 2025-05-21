@@ -343,28 +343,38 @@ interface Month {
 
 ### AWS Cognito Setup
 - Single User Pool with email as primary identifier
-- Standard password policies with email verification
-- JWT tokens for authentication
+- Passwordless authentication with magic links
+- Social login integration (Google, Apple, Facebook)
+- Passkey (WebAuthn) support for secure authentication
+- JWT tokens for authorization
 
 ### Authentication Flow
-1. **User Registration**:
-   - User enters email and password
-   - AWS Cognito creates a new user
-   - Verification email is sent to the user
-   - User verifies email by clicking on the link
+1. **Passwordless Authentication (Primary Method)**:
+   - User enters email address
+   - System sends a magic link via email
+   - User clicks the link to authenticate
+   - Session is established with JWT tokens
 
-2. **User Login**:
-   - User enters email and password
-   - AWS Cognito validates credentials
-   - Upon successful validation, JWT tokens are issued
-   - Tokens are stored in secure HTTP-only cookies
+2. **Social Login**:
+   - User selects preferred social provider
+   - OAuth flow redirects to provider
+   - User authenticates with the provider
+   - Provider returns authentication token
+   - System validates token and establishes session
 
-3. **Token Management**:
+3. **Passkey Authentication**:
+   - User registers a passkey during account creation
+   - For subsequent logins, user authenticates with biometrics or PIN
+   - WebAuthn API handles the cryptographic verification
+   - System validates the authentication and establishes session
+
+4. **Token Management**:
    - Access token for API authorization
    - Refresh token for obtaining new access tokens
    - ID token for user information
+   - Tokens stored in secure HTTP-only cookies
 
-4. **User Session**:
+5. **User Session**:
    - Session maintained via tokens
    - Automatic refresh of tokens when expired
    - Secure logout process that invalidates tokens
