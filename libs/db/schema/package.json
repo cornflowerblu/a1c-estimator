@@ -1,0 +1,14 @@
+{
+  "name": "@a1c/db-schema",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "prisma": "^6.8.2"
+  },
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  }
+}
