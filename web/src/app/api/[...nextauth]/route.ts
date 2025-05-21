@@ -5,12 +5,12 @@ import AppleProvider from "next-auth/providers/apple";
 import FacebookProvider from "next-auth/providers/facebook";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
-// Import the auth types
+import { dataAccess } from "@a1c/data";
 import "@a1c/types";
 
-const prisma = new PrismaClient();
+const prisma: PrismaClient = dataAccess();
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {  
   adapter: PrismaAdapter(prisma),
   providers: [
     // Email Magic Link (passwordless)
