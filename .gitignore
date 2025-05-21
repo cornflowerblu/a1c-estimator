@@ -46,7 +46,15 @@ Thumbs.db
 # Next.js
 .next
 out
+
+# Environment variables
 .env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production
+*/.env
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
