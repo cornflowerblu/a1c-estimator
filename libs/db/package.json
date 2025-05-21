@@ -6,7 +6,10 @@
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "dependencies": {
-    "@prisma/client": "^6.8.2",
+    "ts-node": "^10.9.2",
     "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21"
   }
 }
