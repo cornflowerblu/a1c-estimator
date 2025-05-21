@@ -1,5 +1,6 @@
 import './global.css';
-import '@a1c/ui'
+import '@a1c/ui';
+import { AuthProvider } from '@a1c/ui';
 
 export const metadata = {
   title: 'Welcome to web',
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
