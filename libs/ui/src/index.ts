@@ -6,3 +6,4 @@ export * from './lib/auth/RegisterForm';
 export * from './lib/auth/MagicLinkForm';
 export * from './lib/auth/PasskeySetup';
 export * from './lib/auth/SocialLoginButtons';
+export * from './lib/auth/components';
