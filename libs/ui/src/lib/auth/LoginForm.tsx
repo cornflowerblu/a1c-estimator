@@ -11,7 +11,46 @@ export function LoginForm() {
   const [showMagicLink, setShowMagicLink] = useState(false);
   const { login, loginWithMagicLink, loginWithSocial, loginWithPasskey, error } = useAuth();
 
+const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showMagicLink, setShowMagicLink] = useState(false);
+  const { login, loginWithMagicLink, loginWithSocial, loginWithPasskey, error, setError } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      if (showMagicLink) {
+        await loginWithMagicLink(email);
+      } else {
+        await login(email, password);
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred during login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider: AuthProvider) => {
+    try {
+      await loginWithSocial(provider);
+    } catch (err) {
+      setError(err.message || `An error occurred during ${provider} login`);
+    }
+  };
+
+  const handlePasskeyLogin = async () => {
+    try {
+      await loginWithPasskey();
+    } catch (err) {
+      setError(err.message || 'An error occurred during passkey login');
+    }
+  };
+
+  return (
     e.preventDefault();
     setIsLoading(true);
     

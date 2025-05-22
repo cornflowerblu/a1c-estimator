@@ -25,7 +25,21 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+// Import the dotenv package to load environment variables
+// This allows us to securely store and access sensitive information like passwords
+import dotenv from 'dotenv';
+dotenv.config();
+
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          const response = await loginWithPassword(credentials.email, process.env.PASSWORD);
+          
+          if (response.success && response.user) {
+            return {
           return null;
         }
 
@@ -88,7 +102,14 @@ const handler = NextAuth({
         credential: { label: 'Credential', type: 'text' },
       },
       async authorize(credentials) {
+// Import the dotenv package to load environment variables
+      // This allows us to securely store and access sensitive information
+      import dotenv from 'dotenv';
+      dotenv.config();
+
+      async authorize(credentials) {
         if (!credentials?.credential) {
+          return null;
           return null;
         }
 

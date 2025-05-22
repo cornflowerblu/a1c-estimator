@@ -254,7 +254,32 @@ export async function resetPassword(email: string, code: string, newPassword: st
  * Create a user with magic link (admin creates user without password)
  */
 export async function createUserForMagicLink(email: string): Promise<AuthResponse> {
+export async function createUserForMagicLink(email: string): Promise<AuthResponse> {
   try {
+    // First, check if user already exists
+    try {
+      const getUserParams = {
+        UserPoolId: USER_POOL_ID,
+        Username: email,
+      };
+      const getUserCommand = new AdminGetUserCommand(getUserParams);
+      await cognitoClient.send(getUserCommand);
+      // User exists, return success without creating a new user
+      return {
+        success: true,
+        user: {
+          id: email,
+          email,
+          emailVerified: true,
+        },
+      };
+    } catch (error) {
+      // User doesn't exist, proceed with user creation
+    }
+
+    // If not, create a new user
+    const params = {
+      UserPoolId: USER_POOL_ID,
     // First, check if user already exists
     // If not, create a new user
     const params = {
@@ -409,7 +434,19 @@ export async function getCurrentUser(accessToken: string): Promise<AuthResponse>
 function generateRandomPassword(): string {
   const length = 16;
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
+// Import the crypto module for secure random number generation
+// This provides a more cryptographically secure source of randomness
+import * as crypto from 'crypto';
+
+function generateRandomPassword(): string {
+  const length = 16;
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
   let password = '';
+  
+  for (let i = 0; i < length; i++) {
+    const randomIndex = crypto.randomInt(0, charset.length);
+    password += charset[randomIndex];
+  }
   
   for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * charset.length);
@@ -450,7 +487,31 @@ export async function registerPasskey(userId: string, credential: any): Promise<
     // 2. Store the credential in a database
     // 3. Associate it with the user
     
-    console.log('Registering passkey for user:', userId);
+// Import the sanitize-log-input package for log sanitization
+// This package helps prevent log injection by sanitizing user input before logging
+import { sanitizeLogInput } from 'sanitize-log-input';
+
+export async function registerPasskey(userId: string, credential: any): Promise<AuthResponse> {
+  try {
+    // This is a placeholder for the actual WebAuthn registration
+    // In a real implementation, this would:
+    // 1. Verify the attestation
+    // 2. Store the credential in a database
+    // 3. Associate it with the user
+    
+    console.log('Registering passkey for user:', sanitizeLogInput(userId));
+    console.log('Credential:', sanitizeLogInput(JSON.stringify(credential)));
+    
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error('Error registering passkey:', sanitizeLogInput((error as Error).message));
+    return {
+      success: false,
+      error: {
+        code: 'PASSKEY_REGISTRATION_FAILED',
+        message: (error as Error).message || 'Failed to register passkey',
     console.log('Credential:', credential);
     
     return {

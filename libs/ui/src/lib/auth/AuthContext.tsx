@@ -58,7 +58,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       
       setUser(mockUser);
-      localStorage.setItem('auth_user', JSON.stringify(mockUser));
+};
+      
+      setUser(mockUser);
+      // Use a secure storage method instead of localStorage
+      // import { SecureStorage } from '@capacitor-community/secure-storage';
+      await SecureStorage.set({ key: 'auth_user', value: JSON.stringify(mockUser) });
+      return true;
+    } catch (err) {
+      setError((err as Error).message || 'Failed to login');
       return true;
     } catch (err) {
       setError((err as Error).message || 'Failed to login');
