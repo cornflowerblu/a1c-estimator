@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { AuthProvider } from '@a1c/types';
-import { AuthInput, AuthButton, AuthError, SocialLoginButtons } from './components';
+import { SocialLoginButtons } from './SocialLoginButtons';
+import { LoadingSpinner } from '../common/LoadingSpinner';
+import Link from 'next/link';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -49,85 +51,82 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          {showMagicLink ? 'Magic Link Login' : 'Sign In'}
-        </h2>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
         
-        <AuthError message={error} />
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <AuthInput
-            label="Email Address"
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="you@example.com"
+            />
+          </div>
           
           {!showMagicLink && (
-            <div className="space-y-4">
-              <AuthInput
-                label="Password"
+            <div>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <Link href="/forgot-password" className="text-xs font-medium text-indigo-600 hover:text-indigo-500">
+                  Forgot password?
+                </Link>
+              </div>
+              <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
-              
-              <div className="flex justify-end">
-                <a 
-                  href="/forgot-password" 
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Forgot your password?
-                </a>
-              </div>
             </div>
           )}
           
-          <div className="pt-2">
-            <AuthButton 
-              type="submit" 
-              isLoading={isLoading}
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {showMagicLink ? 'Send Magic Link' : 'Sign In'}
-            </AuthButton>
+              {isLoading ? (
+                <LoadingSpinner text={showMagicLink ? "Sending..." : "Signing in..."} />
+              ) : (
+                showMagicLink ? 'Send Magic Link' : 'Sign in'
+              )}
+            </button>
           </div>
         </form>
         
-        <div className="mt-4 text-center">
-          <button 
-            type="button" 
+        <div className="mt-6">
+          <button
+            type="button"
             onClick={() => setShowMagicLink(!showMagicLink)}
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            className="w-full text-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
           >
             {showMagicLink ? 'Use Password Instead' : 'Use Magic Link Instead'}
           </button>
         </div>
         
-        <SocialLoginButtons onSocialLogin={handleSocialLogin} mode="login" />
-        
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={handlePasskeyLogin}
-            className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H9v5l4.25 2.52.75-1.03-3.5-2.09V5z" clipRule="evenodd" />
-            </svg>
-            Login with Passkey
-          </button>
-        </div>
+        <SocialLoginButtons mode="login" />
         
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <a href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
               Sign up
-            </a>
+            </Link>
           </p>
         </div>
       </div>
