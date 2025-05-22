@@ -1,27 +1,10 @@
-import { PrismaClient } from '@prisma/client/a1c';
+import { prisma } from '@a1c/db';
 
-export async function dataAccess(url?: string): Promise<PrismaClient> {
-  const dbUrl = process.env['DATABASE_URL'];
-
-  if (!dbUrl) {
-    console.error('DATABASE_URL is not defined');
-    const DATABASE_URL = url;
-    const prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: DATABASE_URL,
-        },
-      },
-    });
-    return prisma;
-  }
-
-  const prisma = new PrismaClient({
-    datasources: {
-      db: {
-        url: dbUrl,
-      },
-    },
-  });
+/**
+ * @deprecated Use the prisma client directly from @a1c/db instead.
+ * Example: import { prisma } from '@a1c/db';
+ */
+export async function dataAccess(url?: string) {
+  console.warn('dataAccess() is deprecated. Import prisma from @a1c/db directly instead.');
   return prisma;
 }

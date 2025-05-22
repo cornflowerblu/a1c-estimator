@@ -7,7 +7,7 @@
     "prisma": {
         "command": "prisma",
         "options": {
-          "cwd": "libs/db/schema"
+          "cwd": "libs/db/prisma"
         }
       },
       "migrate": {
@@ -22,7 +22,7 @@
           "cwd": "libs/db/prisma"
         }
       },
-      "generate-types": {
+      "generate-client": {
         "command": "prisma generate",
         "options": {
           "cwd": "libs/db/prisma"

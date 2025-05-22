@@ -1,11 +1,10 @@
 import { dataAccess } from '@a1c/data'
 import { User } from '@a1c/types';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@a1c/db';
 
 // implement DataAccess and get users
 export async function GET(): Promise<Response> {
-  const data: PrismaClient = await dataAccess();
-  const users: User[] = await data.user.findMany(); 
+  const users: User[] = await prisma.user.findMany(); 
   return Response.json({
     status: 200,
     data: users

@@ -7,8 +7,8 @@
     "prisma": "^6.8.2"
   },
   "scripts": {
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:generate": "cd ../prisma && prisma generate",
+    "prisma:migrate": "cd ../prisma && prisma migrate dev",
+    "prisma:studio": "cd ../prisma && prisma studio"
   }
 }

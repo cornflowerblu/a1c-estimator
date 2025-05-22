@@ -1,5 +1,5 @@
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import { PrismaClient } from '../../schema/generated/prisma';
+// Import PrismaClient from the centralized location
+import { PrismaClient } from '../../generated/client';
 
 // PrismaClient is attached to the `global` object in development to prevent
 // exhausting your database connection limit.
