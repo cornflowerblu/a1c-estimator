@@ -1,10 +1,10 @@
 'use client';
 
 import { AuthLayout } from '@a1c/ui';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function VerifyPage() {
+function VerifyForm() {
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,5 +135,13 @@ export default function VerifyPage() {
         </div>
       </div>
     </AuthLayout>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyForm />
+    </Suspense>
   );
 }

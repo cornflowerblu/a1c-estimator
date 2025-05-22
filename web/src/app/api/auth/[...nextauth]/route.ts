@@ -3,7 +3,11 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import AppleProvider from 'next-auth/providers/apple';
 import FacebookProvider from 'next-auth/providers/facebook';
-import { loginWithPassword, authenticateWithMagicLink, authenticateWithPasskey } from '@a1c/services';
+import { login as loginWithPassword, authenticateWithMagicLink, authenticateWithPasskey } from '@a1c/services';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 // Extend the session user type to include id
 declare module "next-auth" {
@@ -25,38 +29,24 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-// Import the dotenv package to load environment variables
-// This allows us to securely store and access sensitive information like passwords
-import dotenv from 'dotenv';
-dotenv.config();
-
-      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
         try {
-          const response = await loginWithPassword(credentials.email, process.env.PASSWORD);
-          
-          if (response.success && response.user) {
-            return {
-          return null;
-        }
-
-        try {
-          const response = await loginWithPassword(credentials.email, credentials.password);
+          const response = await loginWithPassword(credentials.email, credentials.password || 'default-password');
           
           if (response.success && response.user) {
             return {
               id: response.user.id,
               email: response.user.email,
               name: response.user.name,
+              image: response.user.image,
             };
           }
-          
           return null;
         } catch (error) {
-          console.error('Error in Cognito authorize:', error);
+          console.error('Error authenticating with Cognito:', error);
           return null;
         }
       },
@@ -102,14 +92,7 @@ dotenv.config();
         credential: { label: 'Credential', type: 'text' },
       },
       async authorize(credentials) {
-// Import the dotenv package to load environment variables
-      // This allows us to securely store and access sensitive information
-      import dotenv from 'dotenv';
-      dotenv.config();
-
-      async authorize(credentials) {
         if (!credentials?.credential) {
-          return null;
           return null;
         }
 
