@@ -27,14 +27,14 @@ export const AUTH_MODE: AuthMode = 'mock';
  */
 export const COGNITO_CONFIG = {
   // Replace these values with your actual AWS Cognito configuration
-  region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
-  userPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || '',
-  userPoolWebClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '',
+  region: process.env['NEXT_PUBLIC_AWS_REGION'] || 'us-east-1',
+  userPoolId: process.env['NEXT_PUBLIC_COGNITO_USER_POOL_ID'] || '',
+  userPoolWebClientId: process.env['NEXT_PUBLIC_COGNITO_CLIENT_ID'] || '',
   oauth: {
-    domain: process.env.NEXT_PUBLIC_COGNITO_DOMAIN || '',
+    domain: process.env['NEXT_PUBLIC_COGNITO_DOMAIN'] || '',
     scope: ['email', 'profile', 'openid'],
-    redirectSignIn: process.env.NEXT_PUBLIC_REDIRECT_SIGN_IN || 'http://localhost:3000/',
-    redirectSignOut: process.env.NEXT_PUBLIC_REDIRECT_SIGN_OUT || 'http://localhost:3000/',
+    redirectSignIn: process.env['NEXT_PUBLIC_REDIRECT_SIGN_IN'] || 'http://localhost:3000/',
+    redirectSignOut: process.env['NEXT_PUBLIC_REDIRECT_SIGN_OUT'] || 'http://localhost:3000/',
     responseType: 'code',
   },
 };
@@ -43,7 +43,7 @@ export const COGNITO_CONFIG = {
  * Check if using real Cognito authentication
  */
 export const isUsingRealCognito = (): boolean => {
-  return AUTH_MODE === 'cognito';
+  return AUTH_MODE === 'cognito' as AuthMode;
 };
 
 /**
