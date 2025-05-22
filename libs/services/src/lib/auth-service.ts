@@ -15,9 +15,9 @@ import {
 import { AuthError, AuthProvider, AuthResponse, User } from "@a1c/types";
 
 // AWS Cognito configuration
-const REGION = process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1';
-const USER_POOL_ID = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || '';
-const CLIENT_ID = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '';
+const REGION = process.env["NEXT_PUBLIC_AWS_REGION"] || 'us-east-1';
+const USER_POOL_ID = process.env["NEXT_PUBLIC_COGNITO_USER_POOL_ID"] || '';
+const CLIENT_ID = process.env["NEXT_PUBLIC_COGNITO_CLIENT_ID"] || '';
 
 // Initialize the Cognito client
 const cognitoClient = new CognitoIdentityProviderClient({ region: REGION });
@@ -134,7 +134,7 @@ export async function loginWithPassword(email: string, password: string): Promis
       },
     };
 
-    const command = new InitiateAuthCommand(params);
+    const command = new InitiateAuthCommand(params as never);
     const response = await cognitoClient.send(command);
 
     if (!response.AuthenticationResult) {
@@ -273,7 +273,7 @@ export async function createUserForMagicLink(email: string): Promise<AuthRespons
       MessageAction: 'SUPPRESS', // Don't send welcome email
     };
 
-    const command = new AdminCreateUserCommand(params);
+    const command = new AdminCreateUserCommand(params as never);
     await cognitoClient.send(command);
 
     // Generate a temporary password for the magic link
@@ -329,7 +329,7 @@ export async function authenticateWithMagicLink(email: string, token: string): P
       },
     };
 
-    const command = new AdminInitiateAuthCommand(params);
+    const command = new AdminInitiateAuthCommand(params as never);
     const response = await cognitoClient.send(command);
 
     if (!response.AuthenticationResult) {
@@ -383,10 +383,10 @@ export async function getCurrentUser(accessToken: string): Promise<AuthResponse>
     }, {} as Record<string, string>);
 
     const user: User = {
-      id: attributes.sub || response.Username || '',
-      email: attributes.email || '',
-      name: attributes.name,
-      emailVerified: attributes.email_verified === 'true',
+      id: attributes["sub"] || response.Username || '',
+      email: attributes["email"] || '',
+      name: attributes["name"],
+      emailVerified: attributes["email_verified"] === 'true',
     };
 
     return {

@@ -1,9 +1,18 @@
-import NextAuth from 'next-auth';
+import NextAuth, { DefaultSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import AppleProvider from 'next-auth/providers/apple';
 import FacebookProvider from 'next-auth/providers/facebook';
 import { loginWithPassword, authenticateWithMagicLink, authenticateWithPasskey } from '@a1c/services';
+
+// Extend the session user type to include id
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+    } & DefaultSession["user"]
+  }
+}
 
 const handler = NextAuth({
   providers: [
