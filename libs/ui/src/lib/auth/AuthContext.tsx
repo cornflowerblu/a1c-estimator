@@ -14,6 +14,7 @@ interface AuthContextType {
   register: (email: string, password: string, name?: string) => Promise<boolean>;
   logout: () => Promise<void>;
   error: string | null;
+  setError: (error: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -58,15 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       
       setUser(mockUser);
-};
       
-      setUser(mockUser);
-      // Use a secure storage method instead of localStorage
-      // import { SecureStorage } from '@capacitor-community/secure-storage';
-      await SecureStorage.set({ key: 'auth_user', value: JSON.stringify(mockUser) });
-      return true;
-    } catch (err) {
-      setError((err as Error).message || 'Failed to login');
+      // Use localStorage for demo purposes
+      localStorage.setItem('auth_user', JSON.stringify(mockUser));
       return true;
     } catch (err) {
       setError((err as Error).message || 'Failed to login');
@@ -167,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     logout,
     error,
+    setError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

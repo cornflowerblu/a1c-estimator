@@ -10,7 +10,10 @@ import {
   AdminInitiateAuthCommand,
   ResendConfirmationCodeCommand,
   GlobalSignOutCommand,
-  GetUserCommand
+  GetUserCommand,
+  AdminGetUserCommand,
+  AuthFlowType,
+  MessageActionType
 } from "@aws-sdk/client-cognito-identity-provider";
 import { AuthError, AuthProvider, AuthResponse, User } from "@a1c/types";
 
@@ -25,7 +28,7 @@ const cognitoClient = new CognitoIdentityProviderClient({ region: REGION });
 /**
  * Register a new user with email and password
  */
-export async function registerUser(email: string, password: string, name?: string): Promise<AuthResponse> {
+export async function register(email: string, password: string): Promise<AuthResponse> {
   try {
     const params = {
       ClientId: CLIENT_ID,
@@ -36,10 +39,6 @@ export async function registerUser(email: string, password: string, name?: strin
           Name: 'email',
           Value: email,
         },
-        ...(name ? [{
-          Name: 'name',
-          Value: name,
-        }] : []),
       ],
     };
 
@@ -48,7 +47,11 @@ export async function registerUser(email: string, password: string, name?: strin
 
     return {
       success: true,
-      redirectUrl: '/verify',
+      user: {
+        id: email,
+        email,
+        emailVerified: false,
+      },
     };
   } catch (error) {
     console.error('Error registering user:', error);
@@ -63,9 +66,9 @@ export async function registerUser(email: string, password: string, name?: strin
 }
 
 /**
- * Verify a user's email with confirmation code
+ * Confirm a user's registration with the verification code
  */
-export async function verifyUser(email: string, code: string): Promise<AuthResponse> {
+export async function confirmRegistration(email: string, code: string): Promise<AuthResponse> {
   try {
     const params = {
       ClientId: CLIENT_ID,
@@ -78,22 +81,26 @@ export async function verifyUser(email: string, code: string): Promise<AuthRespo
 
     return {
       success: true,
-      redirectUrl: '/login',
+      user: {
+        id: email,
+        email,
+        emailVerified: true,
+      },
     };
   } catch (error) {
-    console.error('Error verifying user:', error);
+    console.error('Error confirming registration:', error);
     return {
       success: false,
       error: {
-        code: 'VERIFICATION_FAILED',
-        message: (error as Error).message || 'Failed to verify user',
+        code: 'CONFIRMATION_FAILED',
+        message: (error as Error).message || 'Failed to confirm registration',
       },
     };
   }
 }
 
 /**
- * Resend verification code
+ * Resend the verification code to the user's email
  */
 export async function resendVerificationCode(email: string): Promise<AuthResponse> {
   try {
@@ -121,34 +128,60 @@ export async function resendVerificationCode(email: string): Promise<AuthRespons
 }
 
 /**
- * Login with email and password
+ * Login a user with email and password
  */
-export async function loginWithPassword(email: string, password: string): Promise<AuthResponse> {
+export async function login(email: string, password: string): Promise<AuthResponse> {
   try {
     const params = {
       ClientId: CLIENT_ID,
-      AuthFlow: 'USER_PASSWORD_AUTH',
+      AuthFlow: 'USER_PASSWORD_AUTH' as AuthFlowType,
       AuthParameters: {
         USERNAME: email,
         PASSWORD: password,
       },
     };
 
-    const command = new InitiateAuthCommand(params as never);
+    const command = new InitiateAuthCommand(params);
     const response = await cognitoClient.send(command);
 
-    if (!response.AuthenticationResult) {
-      throw new Error('Authentication failed');
+    const idToken = response.AuthenticationResult?.IdToken;
+    const accessToken = response.AuthenticationResult?.AccessToken;
+    const refreshToken = response.AuthenticationResult?.RefreshToken;
+
+    if (!idToken || !accessToken || !refreshToken) {
+      throw new Error('Authentication failed: Missing tokens');
     }
 
+    // Get user information
+    const userParams = {
+      AccessToken: accessToken,
+    };
+
+    const userCommand = new GetUserCommand(userParams);
+    const userResponse = await cognitoClient.send(userCommand);
+
+    const userId = userResponse.Username || email;
+    const userAttributes = userResponse.UserAttributes || [];
+    
+    const userEmail = userAttributes.find(attr => attr.Name === 'email')?.Value || email;
+    const emailVerified = userAttributes.find(attr => attr.Name === 'email_verified')?.Value === 'true';
+    const name = userAttributes.find(attr => attr.Name === 'name')?.Value;
+
     const user: User = {
-      id: email, // Using email as ID for now
-      email: email,
+      id: userId,
+      email: userEmail,
+      emailVerified,
+      name,
     };
 
     return {
       success: true,
       user,
+      tokens: {
+        idToken,
+        accessToken,
+        refreshToken,
+      },
     };
   } catch (error) {
     console.error('Error logging in:', error);
@@ -163,7 +196,7 @@ export async function loginWithPassword(email: string, password: string): Promis
 }
 
 /**
- * Logout the current user
+ * Logout a user
  */
 export async function logout(accessToken: string): Promise<AuthResponse> {
   try {
@@ -176,7 +209,6 @@ export async function logout(accessToken: string): Promise<AuthResponse> {
 
     return {
       success: true,
-      redirectUrl: '/login',
     };
   } catch (error) {
     console.error('Error logging out:', error);
@@ -191,7 +223,7 @@ export async function logout(accessToken: string): Promise<AuthResponse> {
 }
 
 /**
- * Initiate forgot password flow
+ * Request a password reset for a user
  */
 export async function forgotPassword(email: string): Promise<AuthResponse> {
   try {
@@ -205,24 +237,23 @@ export async function forgotPassword(email: string): Promise<AuthResponse> {
 
     return {
       success: true,
-      redirectUrl: '/reset-password',
     };
   } catch (error) {
-    console.error('Error initiating forgot password:', error);
+    console.error('Error requesting password reset:', error);
     return {
       success: false,
       error: {
-        code: 'FORGOT_PASSWORD_FAILED',
-        message: (error as Error).message || 'Failed to initiate password reset',
+        code: 'PASSWORD_RESET_REQUEST_FAILED',
+        message: (error as Error).message || 'Failed to request password reset',
       },
     };
   }
 }
 
 /**
- * Complete forgot password flow with confirmation code
+ * Confirm a password reset with the verification code and new password
  */
-export async function resetPassword(email: string, code: string, newPassword: string): Promise<AuthResponse> {
+export async function confirmForgotPassword(email: string, code: string, newPassword: string): Promise<AuthResponse> {
   try {
     const params = {
       ClientId: CLIENT_ID,
@@ -236,24 +267,92 @@ export async function resetPassword(email: string, code: string, newPassword: st
 
     return {
       success: true,
-      redirectUrl: '/login',
     };
   } catch (error) {
-    console.error('Error resetting password:', error);
+    console.error('Error confirming password reset:', error);
     return {
       success: false,
       error: {
-        code: 'RESET_PASSWORD_FAILED',
-        message: (error as Error).message || 'Failed to reset password',
+        code: 'PASSWORD_RESET_CONFIRMATION_FAILED',
+        message: (error as Error).message || 'Failed to confirm password reset',
       },
     };
   }
 }
 
 /**
+ * Get the current user information
+ */
+export async function getCurrentUser(accessToken: string): Promise<AuthResponse> {
+  try {
+    const params = {
+      AccessToken: accessToken,
+    };
+
+    const command = new GetUserCommand(params);
+    const response = await cognitoClient.send(command);
+
+    const userId = response.Username || '';
+    const userAttributes = response.UserAttributes || [];
+    
+    const email = userAttributes.find(attr => attr.Name === 'email')?.Value || '';
+    const emailVerified = userAttributes.find(attr => attr.Name === 'email_verified')?.Value === 'true';
+    const name = userAttributes.find(attr => attr.Name === 'name')?.Value;
+
+    const user: User = {
+      id: userId,
+      email,
+      emailVerified,
+      name,
+    };
+
+    return {
+      success: true,
+      user,
+    };
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    return {
+      success: false,
+      error: {
+        code: 'GET_USER_FAILED',
+        message: (error as Error).message || 'Failed to get user information',
+      },
+    };
+  }
+}
+
+// Helper function to generate a random password for magic links
+function generateRandomPassword(): string {
+  const length = 16;
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
+  let password = '';
+  
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    password += charset[randomIndex];
+  }
+  
+  return password;
+}
+
+// Social login helpers - these would integrate with NextAuth.js
+export const socialLoginProviders = {
+  google: {
+    id: 'google',
+    name: 'Google',
+    type: 'oauth',
+  },
+  apple: {
+    id: 'apple',
+    name: 'Apple',
+    type: 'oauth',
+  },
+};
+
+/**
  * Create a user with magic link (admin creates user without password)
  */
-export async function createUserForMagicLink(email: string): Promise<AuthResponse> {
 export async function createUserForMagicLink(email: string): Promise<AuthResponse> {
   try {
     // First, check if user already exists
@@ -280,10 +379,6 @@ export async function createUserForMagicLink(email: string): Promise<AuthRespons
     // If not, create a new user
     const params = {
       UserPoolId: USER_POOL_ID,
-    // First, check if user already exists
-    // If not, create a new user
-    const params = {
-      UserPoolId: USER_POOL_ID,
       Username: email,
       UserAttributes: [
         {
@@ -295,10 +390,10 @@ export async function createUserForMagicLink(email: string): Promise<AuthRespons
           Value: 'true', // Auto-verify email for magic link users
         },
       ],
-      MessageAction: 'SUPPRESS', // Don't send welcome email
+      MessageAction: 'SUPPRESS' as MessageActionType, // Don't send welcome email
     };
 
-    const command = new AdminCreateUserCommand(params as never);
+    const command = new AdminCreateUserCommand(params);
     await cognitoClient.send(command);
 
     // Generate a temporary password for the magic link
@@ -347,29 +442,53 @@ export async function authenticateWithMagicLink(email: string, token: string): P
     const params = {
       UserPoolId: USER_POOL_ID,
       ClientId: CLIENT_ID,
-      AuthFlow: 'ADMIN_USER_PASSWORD_AUTH',
+      AuthFlow: 'ADMIN_USER_PASSWORD_AUTH' as AuthFlowType,
       AuthParameters: {
         USERNAME: email,
         PASSWORD: token,
       },
     };
 
-    const command = new AdminInitiateAuthCommand(params as never);
+    const command = new AdminInitiateAuthCommand(params);
     const response = await cognitoClient.send(command);
 
-    if (!response.AuthenticationResult) {
-      throw new Error('Magic link authentication failed');
+    const idToken = response.AuthenticationResult?.IdToken;
+    const accessToken = response.AuthenticationResult?.AccessToken;
+    const refreshToken = response.AuthenticationResult?.RefreshToken;
+
+    if (!idToken || !accessToken || !refreshToken) {
+      throw new Error('Authentication failed: Missing tokens');
     }
 
-    // After successful login, set a permanent password or use refresh tokens
-    // for subsequent authentications
+    // Get user information
+    const userParams = {
+      AccessToken: accessToken,
+    };
+
+    const userCommand = new GetUserCommand(userParams);
+    const userResponse = await cognitoClient.send(userCommand);
+
+    const userId = userResponse.Username || email;
+    const userAttributes = userResponse.UserAttributes || [];
+    
+    const userEmail = userAttributes.find(attr => attr.Name === 'email')?.Value || email;
+    const emailVerified = userAttributes.find(attr => attr.Name === 'email_verified')?.Value === 'true';
+    const name = userAttributes.find(attr => attr.Name === 'name')?.Value;
+
+    const user: User = {
+      id: userId,
+      email: userEmail,
+      emailVerified,
+      name,
+    };
 
     return {
       success: true,
-      user: {
-        id: email,
-        email,
-        emailVerified: true,
+      user,
+      tokens: {
+        idToken,
+        accessToken,
+        refreshToken,
       },
     };
   } catch (error) {
@@ -384,99 +503,8 @@ export async function authenticateWithMagicLink(email: string, token: string): P
   }
 }
 
-/**
- * Get current user information
- */
-export async function getCurrentUser(accessToken: string): Promise<AuthResponse> {
-  try {
-    const params = {
-      AccessToken: accessToken,
-    };
-
-    const command = new GetUserCommand(params);
-    const response = await cognitoClient.send(command);
-
-    if (!response.UserAttributes) {
-      throw new Error('Failed to get user attributes');
-    }
-
-    const attributes = response.UserAttributes.reduce((acc, attr) => {
-      if (attr.Name && attr.Value) {
-        acc[attr.Name] = attr.Value;
-      }
-      return acc;
-    }, {} as Record<string, string>);
-
-    const user: User = {
-      id: attributes["sub"] || response.Username || '',
-      email: attributes["email"] || '',
-      name: attributes["name"],
-      emailVerified: attributes["email_verified"] === 'true',
-    };
-
-    return {
-      success: true,
-      user,
-    };
-  } catch (error) {
-    console.error('Error getting current user:', error);
-    return {
-      success: false,
-      error: {
-        code: 'GET_USER_FAILED',
-        message: (error as Error).message || 'Failed to get user information',
-      },
-    };
-  }
-}
-
-// Helper function to generate a random password for magic links
-function generateRandomPassword(): string {
-  const length = 16;
-  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
-// Import the crypto module for secure random number generation
-// This provides a more cryptographically secure source of randomness
-import * as crypto from 'crypto';
-
-function generateRandomPassword(): string {
-  const length = 16;
-  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
-  let password = '';
-  
-  for (let i = 0; i < length; i++) {
-    const randomIndex = crypto.randomInt(0, charset.length);
-    password += charset[randomIndex];
-  }
-  
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * charset.length);
-    password += charset[randomIndex];
-  }
-  
-  return password;
-}
-
-// Social login helpers - these would integrate with NextAuth.js
-export const socialLoginProviders = {
-  google: {
-    id: 'google',
-    name: 'Google',
-    type: 'oauth',
-  },
-  apple: {
-    id: 'apple',
-    name: 'Apple',
-    type: 'oauth',
-  },
-  facebook: {
-    id: 'facebook',
-    name: 'Facebook',
-    type: 'oauth',
-  },
-};
-
-// WebAuthn/Passkey helpers
-// Note: In a real implementation, these would use the @simplewebauthn/server package
+// WebAuthn (passkey) authentication
+// Note: This is a simplified implementation for demonstration purposes
 // and would be more complex to handle the WebAuthn protocol
 
 export async function registerPasskey(userId: string, credential: any): Promise<AuthResponse> {
@@ -487,31 +515,7 @@ export async function registerPasskey(userId: string, credential: any): Promise<
     // 2. Store the credential in a database
     // 3. Associate it with the user
     
-// Import the sanitize-log-input package for log sanitization
-// This package helps prevent log injection by sanitizing user input before logging
-import { sanitizeLogInput } from 'sanitize-log-input';
-
-export async function registerPasskey(userId: string, credential: any): Promise<AuthResponse> {
-  try {
-    // This is a placeholder for the actual WebAuthn registration
-    // In a real implementation, this would:
-    // 1. Verify the attestation
-    // 2. Store the credential in a database
-    // 3. Associate it with the user
-    
-    console.log('Registering passkey for user:', sanitizeLogInput(userId));
-    console.log('Credential:', sanitizeLogInput(JSON.stringify(credential)));
-    
-    return {
-      success: true,
-    };
-  } catch (error) {
-    console.error('Error registering passkey:', sanitizeLogInput((error as Error).message));
-    return {
-      success: false,
-      error: {
-        code: 'PASSKEY_REGISTRATION_FAILED',
-        message: (error as Error).message || 'Failed to register passkey',
+    console.log('Registering passkey for user:', userId);
     console.log('Credential:', credential);
     
     return {

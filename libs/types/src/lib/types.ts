@@ -34,9 +34,16 @@ export type AuthError = {
     message: string;
 }
 
+export type AuthTokens = {
+    idToken: string;
+    accessToken: string;
+    refreshToken: string;
+}
+
 export type AuthResponse = {
     success: boolean;
     user?: User;
     error?: AuthError;
     redirectUrl?: string;
+    tokens?: AuthTokens;
 }
