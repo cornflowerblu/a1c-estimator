@@ -66,12 +66,12 @@ export default function Index() {
             Join thousands of users who are already using our A1C Estimator to better manage their diabetes and improve their quality of life.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-white text-indigo-700 hover:bg-indigo-50 font-medium py-3 px-8 rounded-lg transition-colors">
+            <a href="/auth/register" className="bg-white text-indigo-700 hover:bg-indigo-50 font-medium py-3 px-8 rounded-lg transition-colors inline-block">
               Sign Up Free
-            </button>
-            <button className="bg-transparent border-2 border-white text-white hover:bg-indigo-600 font-medium py-3 px-8 rounded-lg transition-colors">
-              Learn More
-            </button>
+            </a>
+            <a href="/auth/login" className="bg-transparent border-2 border-white text-white hover:bg-indigo-600 font-medium py-3 px-8 rounded-lg transition-colors inline-block">
+              Sign In
+            </a>
           </div>
         </div>
         
