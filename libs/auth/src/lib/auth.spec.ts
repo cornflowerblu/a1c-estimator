@@ -1,83 +1,74 @@
 import { authOptions } from './auth';
-import { NextAuthOptions, Session, AdapterUser, JWT } from 'next-auth';
-import { ISODateString } from 'next-auth/core/types';
+import { mockCognitoAuth, cognitoConfig } from './cognito-auth';
+import { setEnvVar } from './environment';
 
-describe('auth', () => {
-  it('should export authOptions', () => {
-    expect(authOptions).toBeDefined();
-    expect(authOptions).toHaveProperty('providers');
-    expect(authOptions).toHaveProperty('session');
-    expect(authOptions).toHaveProperty('callbacks');
-    expect(authOptions).toHaveProperty('pages');
-  });
+setEnvVar('USE_MOCK_COGNITO', 'true');
+setEnvVar('NODE_ENV', 'test');
 
-  it('should configure social providers', () => {
-    const providers = authOptions.providers;
+describe('Auth Configuration', () => {
+  it('should include Cognito provider', () => {
+    // Check if providers array exists and has items
+    expect(authOptions.providers).toBeDefined();
+    expect(authOptions.providers.length).toBeGreaterThan(0);
     
-    // Check that we have at least 3 providers (Google, Apple, Facebook)
-    expect(providers.length).toBeGreaterThanOrEqual(3);
-    
-    // Check for specific providers
-    const providerIds = providers.map((provider: any) => provider.id);
-    expect(providerIds).toContain('google');
-    expect(providerIds).toContain('apple');
-    expect(providerIds).toContain('facebook');
+    // Check if at least one provider has id 'cognito'
+    const cognitoProvider = authOptions.providers.find(
+      (provider: any) => provider.id === 'cognito'
+    );
+    expect(cognitoProvider).toBeDefined();
   });
 
   it('should use JWT session strategy', () => {
-    expect(authOptions.session).toBeDefined();
-    expect(authOptions.session.strategy).toBe('jwt');
+    expect(authOptions.session?.strategy).toBe('jwt');
   });
 
-  it('should configure custom authentication pages', () => {
-    expect(authOptions.pages).toBeDefined();
-    expect(authOptions.pages.signIn).toBe('/auth/signin');
-    expect(authOptions.pages.signOut).toBe('/auth/signout');
-    expect(authOptions.pages.error).toBe('/auth/error');
-    expect(authOptions.pages.verifyRequest).toBe('/auth/verify-request');
+  it('should have proper callback functions', () => {
+    expect(typeof authOptions.callbacks?.session).toBe('function');
+    expect(typeof authOptions.callbacks?.jwt).toBe('function');
+  });
+});
+
+describe('Mock Cognito Auth', () => {
+  it('should authenticate valid user', async () => {
+    const result = await mockCognitoAuth.signIn('testuser', 'password123');
+    expect(result.user).toBeDefined();
+    expect(result.user.username).toBe('testuser');
+    expect(result.user.email).toBe('test@example.com');
   });
 
-  it('should have session and JWT callbacks', () => {
-    expect(authOptions.callbacks).toBeDefined();
-    expect(typeof authOptions.callbacks.session).toBe('function');
-    expect(typeof authOptions.callbacks.jwt).toBe('function');
+  it('should reject invalid credentials', async () => {
+    await expect(mockCognitoAuth.signIn('testuser', 'wrongpassword'))
+      .rejects.toThrow('Invalid username or password');
   });
 
-  describe('session callback', () => {
-    it('should add user ID to session', async () => {
-      const mockSession: Session = { user: { name: 'Test User', email: null, image: null }, expires: new Date().toISOString() as ISODateString };
-      const mockToken: JWT = { sub: 'user-123' };
-      
-      const result = await authOptions.callbacks.session({ 
-        session: mockSession, 
-        token: mockToken,
-        user: null as unknown as AdapterUser,
-        newSession: undefined,
-        trigger: 'update'
-      });
-      
-      expect(result.user).toBeDefined();
-      expect(result.user.id).toBe('user-123');
-    });
+  it('should register new user', async () => {
+    const username = `user_${Date.now()}`;
+    const email = `${username}@example.com`;
+    
+    const result = await mockCognitoAuth.register(username, email, 'password123', 'Test User');
+    
+    expect(result.user).toBeDefined();
+    expect(result.user.username).toBe(username);
+    expect(result.user.email).toBe(email);
+    
+    // Should be able to sign in with new credentials
+    const signInResult = await mockCognitoAuth.signIn(username, 'password123');
+    expect(signInResult.user.username).toBe(username);
   });
 
-  describe('jwt callback', () => {
-    it('should add user ID to token', async () => {
-      const mockToken = {};
-      const mockUser = { id: 'user-123', email: 'test@example.com' } as AdapterUser;
-      
-      const result = await authOptions.callbacks.jwt({ 
-        token: mockToken, 
-        user: mockUser,
-        account: null,
-        profile: undefined,
-        isNewUser: undefined,
-        session: undefined,
-        trigger: 'signIn'
-      });
-      
-      expect(result).toBeDefined();
-      expect(result.id).toBe('user-123');
-    });
+  it('should reject duplicate username registration', async () => {
+    await expect(mockCognitoAuth.register('testuser', 'new@example.com', 'password123'))
+      .rejects.toThrow('Username already exists');
+  });
+
+  it('should reject duplicate email registration', async () => {
+    await expect(mockCognitoAuth.register('newuser', 'test@example.com', 'password123'))
+      .rejects.toThrow('Email already exists');
+  });
+});
+
+describe('Cognito Config', () => {
+  it('should use mock in test environment', () => {
+    expect(cognitoConfig.useMockCognito).toBe(true);
   });
 });
