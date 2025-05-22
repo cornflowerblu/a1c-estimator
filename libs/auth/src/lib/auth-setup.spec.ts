@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 
 describe('Authentication Setup Instructions', () => {
   let readmeContent: string;
@@ -61,7 +61,7 @@ describe('Authentication Setup Instructions', () => {
     it('should have consistent environment variable names in the README and code', () => {
       // Get all environment variable names from the README
       const envVarRegex = /\b(NEXT_PUBLIC_[A-Z_]+|[A-Z_]+_CLIENT_ID|[A-Z_]+_CLIENT_SECRET|EMAIL_[A-Z_]+)\b/g;
-      const readmeEnvVars = readmeContent.match(envVarRegex) || [];
+      const readmeEnvVars = Array.from(new Set(Array.from(readmeContent.matchAll(envVarRegex)).map(match => match[0])));
       
       // Check for key environment variables
       const requiredEnvVars = [

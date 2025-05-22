@@ -1,5 +1,6 @@
 import { authOptions } from './auth';
-import { NextAuthOptions } from 'next-auth';
+import { NextAuthOptions, Session, AdapterUser, JWT } from 'next-auth';
+import { ISODateString } from 'next-auth/core/types';
 
 describe('auth', () => {
   it('should export authOptions', () => {
@@ -44,13 +45,13 @@ describe('auth', () => {
 
   describe('session callback', () => {
     it('should add user ID to session', async () => {
-      const mockSession = { user: { name: 'Test User' } };
-      const mockToken = { sub: 'user-123' };
+      const mockSession: Session = { user: { name: 'Test User', email: null, image: null }, expires: new Date().toISOString() as ISODateString };
+      const mockToken: JWT = { sub: 'user-123' };
       
       const result = await authOptions.callbacks.session({ 
         session: mockSession, 
         token: mockToken,
-        user: undefined,
+        user: null as unknown as AdapterUser,
         newSession: undefined,
         trigger: 'update'
       });
@@ -63,12 +64,12 @@ describe('auth', () => {
   describe('jwt callback', () => {
     it('should add user ID to token', async () => {
       const mockToken = {};
-      const mockUser = { id: 'user-123' };
+      const mockUser = { id: 'user-123', email: 'test@example.com' } as AdapterUser;
       
       const result = await authOptions.callbacks.jwt({ 
         token: mockToken, 
         user: mockUser,
-        account: undefined,
+        account: null,
         profile: undefined,
         isNewUser: undefined,
         session: undefined,

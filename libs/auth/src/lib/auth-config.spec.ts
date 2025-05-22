@@ -10,23 +10,23 @@ describe('Authentication Configuration', () => {
     process.env = { ...originalEnv };
     
     // Set up mock environment variables for testing
-    process.env.NEXT_PUBLIC_AWS_REGION = 'us-east-1';
-    process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID = 'test-user-pool-id';
-    process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID = 'test-client-id';
-    process.env.COGNITO_CLIENT_SECRET = 'test-client-secret';
-    process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
-    process.env.GOOGLE_CLIENT_SECRET = 'test-google-client-secret';
-    process.env.APPLE_ID = 'test-apple-id';
-    process.env.APPLE_TEAM_ID = 'test-apple-team-id';
-    process.env.APPLE_PRIVATE_KEY = 'test-apple-private-key';
-    process.env.APPLE_KEY_ID = 'test-apple-key-id';
-    process.env.FACEBOOK_CLIENT_ID = 'test-facebook-client-id';
-    process.env.FACEBOOK_CLIENT_SECRET = 'test-facebook-client-secret';
-    process.env.EMAIL_SERVER_HOST = 'smtp.example.com';
-    process.env.EMAIL_SERVER_PORT = '587';
-    process.env.EMAIL_SERVER_USER = 'test-email-user';
-    process.env.EMAIL_SERVER_PASSWORD = 'test-email-password';
-    process.env.EMAIL_FROM = 'noreply@example.com';
+    process.env['NEXT_PUBLIC_AWS_REGION'] = 'us-east-1';
+    process.env['NEXT_PUBLIC_COGNITO_USER_POOL_ID'] = 'test-user-pool-id';
+    process.env['NEXT_PUBLIC_COGNITO_CLIENT_ID'] = 'test-client-id';
+    process.env['COGNITO_CLIENT_SECRET'] = 'test-client-secret';
+    process.env['GOOGLE_CLIENT_ID'] = 'test-google-client-id';
+    process.env['GOOGLE_CLIENT_SECRET'] = 'test-google-client-secret';
+    process.env['APPLE_ID'] = 'test-apple-id';
+    process.env['APPLE_TEAM_ID'] = 'test-apple-team-id';
+    process.env['APPLE_PRIVATE_KEY'] = 'test-apple-private-key';
+    process.env['APPLE_KEY_ID'] = 'test-apple-key-id';
+    process.env['FACEBOOK_CLIENT_ID'] = 'test-facebook-client-id';
+    process.env['FACEBOOK_CLIENT_SECRET'] = 'test-facebook-client-secret';
+    process.env['EMAIL_SERVER_HOST'] = 'smtp.example.com';
+    process.env['EMAIL_SERVER_PORT'] = '587';
+    process.env['EMAIL_SERVER_USER'] = 'test-email-user';
+    process.env['EMAIL_SERVER_PASSWORD'] = 'test-email-password';
+    process.env['EMAIL_FROM'] = 'noreply@example.com';
   });
 
   afterEach(() => {
@@ -51,8 +51,8 @@ describe('Authentication Configuration', () => {
 
     it('should throw an error if required Cognito environment variables are missing', () => {
       // Remove required environment variables
-      delete process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID;
-      delete process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+      delete process.env['NEXT_PUBLIC_COGNITO_USER_POOL_ID'];
+      delete process.env['NEXT_PUBLIC_COGNITO_CLIENT_ID'];
       
       // Importing auth options should throw an error
       expect(() => {
