@@ -1,3 +1,5 @@
+import { getEnvVar } from './environment';
+
 /**
  * Mock Cognito Authentication Implementation
  * 
@@ -232,16 +234,16 @@ export const createMockCognitoProvider = () => {
 export const cognitoConfig = {
   // Set to true to use mock implementation, false to use real Cognito
   // In production, this should be controlled by environment variables
-  useMockCognito: process.env.USE_MOCK_COGNITO === "true" || process.env.NODE_ENV === "development",
+  useMockCognito: getEnvVar('USE_MOCK_COGNITO') === "true" || getEnvVar('NODE_ENV') === "development",
   
   // Cognito region (for real implementation)
-  region: process.env.COGNITO_REGION || "us-east-1",
+  region: getEnvVar('COGNITO_REGION', "us-east-1"),
   
   // Cognito User Pool ID (for real implementation)
-  userPoolId: process.env.COGNITO_USER_POOL_ID || "",
+  userPoolId: getEnvVar('COGNITO_USER_POOL_ID'),
   
   // Cognito App Client ID (for real implementation)
-  clientId: process.env.COGNITO_CLIENT_ID || "",
+  clientId: getEnvVar('COGNITO_CLIENT_ID'),
 };
 
 /**
