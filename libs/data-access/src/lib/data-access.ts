@@ -1,27 +1,10 @@
-import { PrismaClient } from '@prisma/client/a1c';
+import { getDataAccess } from './data-access-facade';
 
-export async function dataAccess(url?: string): Promise<PrismaClient> {
-  const dbUrl = process.env['DATABASE_URL'];
+// Export the localStorage-based data access implementation
+export const dataAccess = getDataAccess;
 
-  if (!dbUrl) {
-    console.error('DATABASE_URL is not defined');
-    const DATABASE_URL = url;
-    const prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: DATABASE_URL,
-        },
-      },
-    });
-    return prisma;
-  }
-
-  const prisma = new PrismaClient({
-    datasources: {
-      db: {
-        url: dbUrl,
-      },
-    },
-  });
-  return prisma;
+// For backward compatibility with the original Prisma implementation
+export async function getPrismaClient(url?: string) {
+  console.warn('Prisma client is not available in the localStorage implementation');
+  return null;
 }
