@@ -1,10 +1,23 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AuthCard, Button, AuthLink } from '../components';
 
-export default function VerifyPage() {
+function VerifyContent() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="text-gray-600 mt-4">Loading verification details...</p>
+      </div>
+    }>
+      <VerifyDetails />
+    </Suspense>
+  );
+}
+
+function VerifyDetails() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   
@@ -45,31 +58,21 @@ export default function VerifyPage() {
   }, [token]);
 
   return (
-    <AuthCard 
-      title="Email Verification" 
-      subtitle={
-        verificationStatus === 'loading' 
-          ? 'Verifying your email address...' 
-          : verificationStatus === 'success'
-            ? 'Your email has been verified'
-            : 'Verification failed'
-      }
-    >
-      <div className="flex flex-col items-center justify-center py-6">
+    <div className="flex flex-col items-center justify-center">
         {isLoading ? (
           <div className="flex flex-col items-center space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="text-gray-600">Verifying your email address...</p>
+            <p className="text-gray-600 mt-4">Verifying your email address...</p>
           </div>
         ) : verificationStatus === 'success' ? (
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6">
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
               <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-gray-600">Your email has been successfully verified.</p>
-            <div className="mt-6">
+            <p className="text-gray-600 text-lg">Your email has been successfully verified.</p>
+            <div>
               <Button
                 type="button"
                 fullWidth
@@ -80,14 +83,14 @@ export default function VerifyPage() {
             </div>
           </div>
         ) : (
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6">
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
               <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <p className="text-red-600">{errorMessage}</p>
-            <div className="mt-6">
+            <p className="text-red-600 text-lg font-medium">{errorMessage}</p>
+            <div>
               <Button
                 type="button"
                 variant="outline"
@@ -97,7 +100,7 @@ export default function VerifyPage() {
                 Try again
               </Button>
             </div>
-            <div className="mt-4">
+            <div className="mt-6">
               <p className="text-sm text-gray-600">
                 Need help?{' '}
                 <AuthLink href="/support">
@@ -108,6 +111,23 @@ export default function VerifyPage() {
           </div>
         )}
       </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <AuthCard 
+      title="Email Verification" 
+      subtitle="Verifying your email address..."
+    >
+      <Suspense fallback={
+        <div className="flex flex-col items-center justify-center py-6">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <p className="text-gray-600 mt-4">Loading verification...</p>
+        </div>
+      }>
+        <VerifyContent />
+      </Suspense>
     </AuthCard>
   );
 }
