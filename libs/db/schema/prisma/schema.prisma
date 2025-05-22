@@ -1,3 +1,7 @@
+// DEPRECATED: This schema file is no longer used.
+// Please use the centralized schema at /libs/db/prisma/schema.prisma instead.
+// This file is kept for backward compatibility but will be removed in a future update.
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
