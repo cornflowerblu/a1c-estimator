@@ -1,148 +1,119 @@
-# Database Library (@a1c/db)
+# A1C Estimator Database Library
 
 This library provides database access for the A1C Estimator application using Prisma ORM.
 
+## Overview
+
+The database library centralizes all database operations and provides a type-safe interface for interacting with the PostgreSQL database. It uses Prisma ORM for database access and schema management.
+
 ## Setup
 
-The database setup has been simplified to use a centralized Prisma schema and consistent configuration.
+### Prerequisites
 
-### Quick Setup
+- Node.js 16+
+- PostgreSQL database
+- Environment variables configured (see below)
 
-A setup script is provided to quickly set up the Prisma environment:
+### Environment Variables
 
-```bash
-# Make the script executable
-chmod +x libs/db/scripts/setup-prisma.sh
-
-# Run the setup script
-./libs/db/scripts/setup-prisma.sh
-```
-
-This script will:
-1. Create the necessary directories
-2. Generate the Prisma client
-3. Verify that the setup was successful
-
-### Directory Structure
+Create a `.env` file in the root of the project with the following variables:
 
 ```
-libs/db/
-├── generated/         # Generated Prisma client files
-├── prisma/            # Prisma schema and migrations
-│   ├── schema.prisma  # The centralized Prisma schema
-│   └── migrations/    # Database migrations
-├── src/               # Source code
-│   ├── lib/           # Library code
-│   │   └── prisma-client.ts  # Prisma client singleton
-│   └── index.ts       # Main exports
-├── examples/          # Usage examples
-└── index.ts           # Re-export from src/
+DATABASE_URL="postgresql://username:password@localhost:5432/a1c_estimator"
 ```
 
-### Prisma Schema
+Replace `username`, `password`, and database name as appropriate for your environment.
 
-The Prisma schema is located at `libs/db/prisma/schema.prisma`. This is the single source of truth for your database schema.
+### Installation
 
-### Prisma Client
+1. Install dependencies:
+   ```
+   npm install
+   ```
 
-The Prisma client is generated to `libs/db/generated/client/` and exported as a singleton from `libs/db/src/lib/prisma-client.ts`.
+2. Generate Prisma client:
+   ```
+   cd libs/db
+   npx prisma generate
+   ```
+
+3. Run migrations (if needed):
+   ```
+   npx prisma migrate dev
+   ```
 
 ## Usage
 
-### Importing the Prisma Client
+### Basic Usage
+
+Import the Prisma client from the library:
 
 ```typescript
-// Import the Prisma client singleton
 import { prisma } from '@a1c/db';
 
-// Use it in your code
-const users = await prisma.user.findMany();
+// Example: Find a user
+const user = await prisma.user.findUnique({
+  where: { email: 'user@example.com' },
+});
 ```
 
-### Common Operations
+### Examples
 
-See the examples directory for common usage patterns:
+See the `examples` directory for more detailed usage examples:
 
-- Basic CRUD operations
-- Transactions
-- Relations
+- `basic-usage.ts`: Demonstrates common database operations
+- Additional examples for specific use cases
 
-## Commands
+## Schema
 
-The following commands are available for working with the database:
+The Prisma schema is located at `libs/db/prisma/schema.prisma`. It defines the following models:
 
-### Generate Prisma Client
+- User: Application user
+- Account: Authentication accounts (for NextAuth.js)
+- Session: User sessions
+- UserMedicalProfile: Medical information for users
+- GlucoseReading: Blood glucose readings
+- Run: Collection of readings over a period
+- Month: Monthly aggregation of runs
+- UserPreferences: User application preferences
 
-```bash
-nx run db:generate-client
+## Scripts
+
+The `scripts` directory contains helpful utilities:
+
+- `setup-prisma.sh`: Script to initialize, generate, and manage Prisma
+
+Usage:
+```
+cd libs/db
+./scripts/setup-prisma.sh --help
 ```
 
-This command generates the Prisma client based on your schema.
+## Development
 
-### Run Migrations
+### Adding a New Model
 
-```bash
-nx run db:migrate -- --name <migration-name>
+1. Update the schema in `prisma/schema.prisma`
+2. Run `npx prisma generate` to update the client
+3. Run `npx prisma migrate dev --name add_new_model` to create a migration
+
+### Running Prisma Studio
+
+To explore and edit your data visually:
+
 ```
-
-This command creates a new migration and applies it to your database.
-
-### Reset Database
-
-```bash
-nx run db:migrate-reset
-```
-
-This command resets your database and applies all migrations from scratch.
-
-### Seed Database
-
-```bash
-nx run db:seed
-```
-
-This command seeds your database with initial data.
-
-### Prisma Studio
-
-```bash
-nx run db:prisma -- studio
-```
-
-This command opens Prisma Studio, a visual editor for your database.
-
-## Environment Variables
-
-The following environment variables are required:
-
-- `DATABASE_URL`: The connection string for your PostgreSQL database
-
-Example:
-```
-DATABASE_URL="postgresql://username:password@localhost:5432/a1c?schema=public"
+npx prisma studio
 ```
 
 ## Troubleshooting
 
-### Client Generation Issues
+### Common Issues
 
-If you encounter issues with the Prisma client generation:
+1. **Client not generated**: Run `npx prisma generate` in the `libs/db` directory
+2. **Database connection issues**: Check your DATABASE_URL in the .env file
+3. **Type errors**: Make sure you've generated the latest Prisma client after schema changes
 
-1. Delete the generated client directory: `rm -rf libs/db/generated/client`
-2. Regenerate the client: `nx run db:generate-client`
+## Resources
 
-### Database Connection Issues
-
-If you encounter database connection issues:
-
-1. Verify your DATABASE_URL environment variable
-2. Ensure your database server is running
-3. Check network connectivity to the database server
-
-## Best Practices
-
-1. Always use the exported prisma singleton from `@a1c/db` rather than creating new instances
-2. Use transactions for operations that require multiple database changes
-3. Add new models to the centralized schema.prisma file
-4. Run migrations in development to keep your local database in sync
-5. Document complex database queries in comments
+- [Prisma Documentation](https://www.prisma.io/docs/)
+- [NextAuth.js with Prisma](https://next-auth.js.org/adapters/prisma)
