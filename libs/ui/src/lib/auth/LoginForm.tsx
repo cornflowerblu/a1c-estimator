@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { AuthProvider } from '@a1c/types';
+import { SocialLoginButtons } from './SocialLoginButtons';
+import { LoadingSpinner } from '../common/LoadingSpinner';
+import Link from 'next/link';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -46,62 +49,86 @@ export function LoginForm() {
   };
 
   return (
-    <div className="login-form">
-      <h2>{showMagicLink ? 'Magic Link Login' : 'Login'}</h2>
-      
-      {error && <div className="error-message">{error}</div>}
-      
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        
-        {!showMagicLink && (
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+    <div className="w-full max-w-md mx-auto">
+      <div className="bg-white rounded-lg shadow-md p-8">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
           </div>
         )}
         
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Loading...' : showMagicLink ? 'Send Magic Link' : 'Login'}
-        </button>
-      </form>
-      
-      <div className="login-options">
-        <button 
-          type="button" 
-          onClick={() => setShowMagicLink(!showMagicLink)}
-          className="link-button"
-        >
-          {showMagicLink ? 'Use Password' : 'Use Magic Link'}
-        </button>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="you@example.com"
+            />
+          </div>
+          
+          {!showMagicLink && (
+            <div>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <Link href="/forgot-password" className="text-xs font-medium text-indigo-600 hover:text-indigo-500">
+                  Forgot password?
+                </Link>
+              </div>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+          )}
+          
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <LoadingSpinner text={showMagicLink ? "Sending..." : "Signing in..."} />
+              ) : (
+                showMagicLink ? 'Send Magic Link' : 'Sign in'
+              )}
+            </button>
+          </div>
+        </form>
         
-        <div className="social-login">
-          <button type="button" onClick={() => handleSocialLogin('google')}>
-            Login with Google
-          </button>
-          <button type="button" onClick={() => handleSocialLogin('apple')}>
-            Login with Apple
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={() => setShowMagicLink(!showMagicLink)}
+            className="w-full text-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            {showMagicLink ? 'Use Password Instead' : 'Use Magic Link Instead'}
           </button>
         </div>
         
-        <button type="button" onClick={handlePasskeyLogin}>
-          Login with Passkey
-        </button>
+        <SocialLoginButtons mode="login" />
+        
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
