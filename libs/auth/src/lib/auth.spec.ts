@@ -1,7 +1,5 @@
 import { authOptions } from './auth';
 import { mockCognitoAuth, cognitoConfig } from './cognito-auth';
-
-// Mock the environment variables
 import { setEnvVar } from './environment';
 
 setEnvVar('USE_MOCK_COGNITO', 'true');
