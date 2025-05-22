@@ -1,3 +1,4 @@
 export * from './lib/types';
 export * from './lib/auth';
-export type { User } from './lib/types';
+export * from './lib/data-models';
+export type { User as LegacyUser } from './lib/types';
